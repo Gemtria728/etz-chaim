@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+html,body{margin:0;padding:0;background:white;font-family:sans-serif;}
+.wrap{display:flex;flex-direction:column;align-items:center;padding:16px 8px;background:white;}
+h1{font-size:16px;font-weight:700;color:#1d3557;margin-bottom:6px;text-align:center;}
+.guide{font-size:11px;color:#c0284a;font-weight:600;margin:0 0 10px;text-align:center;line-height:1.7;padding:6px 12px;background:#fff5f5;border-radius:8px;border:1px solid #f5c0c0;}
+.layer-btns{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;justify-content:center;}
+.layer-btn{font-size:12px;padding:6px 12px;border:2px solid;border-radius:8px;cursor:pointer;font-weight:700;}
+.btn-blue{border-color:#2471A3;background:#2471A3;color:white;}
+.btn-purple{border-color:#5a2080;background:white;color:#5a2080;}
+.btn-purple.on{background:#5a2080;color:white;}
+.btn-red{border-color:#b22222;background:white;color:#b22222;}
+.btn-red.on{background:#b22222;color:white;}
+.controls{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;justify-content:center;}
+.ctrl{font-size:11px;padding:5px 12px;border:1.5px solid #999;border-radius:7px;background:#f0f0f0;color:#333;cursor:pointer;font-weight:600;}
+.ctrl:hover{background:#ddd;}
+.ctrl.red{color:#922b21;border-color:#e88;background:#fff0f0;}
+.status{font-size:12px;color:#1d3557;margin-bottom:8px;text-align:center;font-weight:700;padding:5px 10px;background:#e8f4fd;border-radius:6px;border:1px solid #b8d8f0;width:90%;max-width:300px;}
+.ibox{width:90%;max-width:300px;margin-bottom:10px;padding:12px 14px;background:#fef9e7;border:2px solid #c9a84c;border-radius:10px;display:none;}
+.ibox.on{display:block;}
+.ititle{font-size:13px;font-weight:700;color:#1d3557;margin-bottom:6px;border-bottom:1px solid #e0c87a;padding-bottom:4px;}
+.isec{margin-bottom:8px;}
+.ilabel{font-size:11px;font-weight:700;color:#c0284a;margin-bottom:2px;}
+.itext{font-size:11px;color:#4a3000;line-height:1.7;}
+.cbox{width:90%;max-width:300px;margin-bottom:10px;padding:12px 14px;background:#f0f7ff;border:2px solid #2471A3;border-radius:10px;display:none;}
+.cbox.on{display:block;}
+.ctitle{font-size:13px;font-weight:700;color:#1d3557;margin-bottom:6px;border-bottom:1px solid #a8c8f0;padding-bottom:4px;}
+.ctext{font-size:11px;color:#1d3557;line-height:1.8;white-space:pre-line;}
+.svg-wrap{width:100%;max-width:300px;}
+svg{width:100%;height:auto;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>에츠 하임 익히기 (עץ החיים)</h1>
+  <div class="guide">
+    ✦ 히브리어는 오른쪽에서 왼쪽으로 읽습니다<br>
+    ① ② 버튼 → 세피라 두 번 클릭 → 경로 표시<br>
+    ③ 버튼 → 생일→생월→생년 순서로 세피라 클릭
+  </div>
+  <div class="layer-btns">
+    <button class="layer-btn btn-blue" id="b1" onclick="setLayer(1)">① 이름 경로</button>
+    <button class="layer-btn btn-purple" id="b2" onclick="setLayer(2)">② 과제/문장 경로</button>
+    <button class="layer-btn btn-red" id="b3" onclick="setLayer(3)">③ 생년월일 세피라</button>
+  </div>
+  <div class="controls">
+    <button class="ctrl" onclick="undoLast()">↩ 마지막 취소</button>
+    <button class="ctrl red" onclick="clearLayer()">현재 초기화</button>
+    <button class="ctrl red" onclick="resetAll()">전체 초기화</button>
+  </div>
+  <div class="status" id="status">① 이름 경로 · 첫 번째 세피라를 선택하세요</div>
+
+  <!-- 단일 세피라 해석 박스 -->
+  <div class="ibox" id="ibox">
+    <div class="ititle" id="ititle"></div>
+    <div class="isec">
+      <div class="ilabel" id="irole"></div>
+      <div class="itext" id="imain"></div>
+    </div>
+    <div class="isec">
+      <div class="ilabel">✦ 건강할 때</div>
+      <div class="itext" id="ihealthy"></div>
+    </div>
+    <div class="isec">
+      <div class="ilabel">✦ 불건강할 때</div>
+      <div class="itext" id="iunhealthy"></div>
+    </div>
+  </div>
+
+  <!-- 3개 조합 해석 박스 -->
+  <div class="cbox" id="cbox">
+    <div class="ctitle" id="ctitle"></div>
+    <div class="ctext" id="ctext"></div>
+  </div>
+
+  <div class="svg-wrap">
+  <svg id="tree" viewBox="0 0 260 490" xmlns="http://www.w3.org/2000/svg">
+    <line id="l-keter-binah"       stroke="#d0d8e0" stroke-width="2.5" x1="130" y1="30"  x2="55"  y2="88"/>
+    <line id="l-keter-chokmah"     stroke="#d0d8e0" stroke-width="2.5" x1="130" y1="30"  x2="205" y2="88"/>
+    <line id="l-keter-tiphereth"   stroke="#d0d8e0" stroke-width="2.5" x1="130" y1="30"  x2="130" y2="254"/>
+    <line id="l-binah-chokmah"     stroke="#d0d8e0" stroke-width="2.5" x1="55"  y1="88"  x2="205" y2="88"/>
+    <line id="l-binah-gevurah"     stroke="#d0d8e0" stroke-width="2.5" x1="55"  y1="88"  x2="55"  y2="196"/>
+    <line id="l-chokmah-chesed"    stroke="#d0d8e0" stroke-width="2.5" x1="205" y1="88"  x2="205" y2="196"/>
+    <line id="l-binah-chesed"      stroke="#d0d8e0" stroke-width="2.5" x1="55"  y1="88"  x2="205" y2="196"/>
+    <line id="l-chokmah-gevurah"   stroke="#d0d8e0" stroke-width="2.5" x1="205" y1="88"  x2="55"  y2="196"/>
+    <line id="l-gevurah-chesed"    stroke="#d0d8e0" stroke-width="2.5" x1="55"  y1="196" x2="205" y2="196"/>
+    <line id="l-gevurah-tiphereth" stroke="#d0d8e0" stroke-width="2.5" x1="55"  y1="196" x2="130" y2="254"/>
+    <line id="l-chesed-tiphereth"  stroke="#d0d8e0" stroke-width="2.5" x1="205" y1="196" x2="130" y2="254"/>
+    <line id="l-tiphereth-binah"   stroke="#d0d8e0" stroke-width="2.5" x1="130" y1="254" x2="55"  y2="88"/>
+    <line id="l-tiphereth-chokmah" stroke="#d0d8e0" stroke-width="2.5" x1="130" y1="254" x2="205" y2="88"/>
+    <line id="l-gevurah-hod"       stroke="#d0d8e0" stroke-width="2.5" x1="55"  y1="196" x2="55"  y2="312"/>
+    <line id="l-chesed-netzach"    stroke="#d0d8e0" stroke-width="2.5" x1="205" y1="196" x2="205" y2="312"/>
+    <line id="l-tiphereth-hod"     stroke="#d0d8e0" stroke-width="2.5" x1="130" y1="254" x2="55"  y2="312"/>
+    <line id="l-tiphereth-netzach" stroke="#d0d8e0" stroke-width="2.5" x1="130" y1="254" x2="205" y2="312"/>
+    <line id="l-tiphereth-yesod"   stroke="#d0d8e0" stroke-width="2.5" x1="130" y1="254" x2="130" y2="370"/>
+    <line id="l-hod-netzach"       stroke="#d0d8e0" stroke-width="2.5" x1="55"  y1="312" x2="205" y2="312"/>
+    <line id="l-netzach-yesod"     stroke="#d0d8e0" stroke-width="2.5" x1="205" y1="312" x2="130" y2="370"/>
+    <line id="l-hod-yesod"         stroke="#d0d8e0" stroke-width="2.5" x1="55"  y1="312" x2="130" y2="370"/>
+    <line id="l-yesod-malkuth"     stroke="#d0d8e0" stroke-width="2.5" x1="130" y1="370" x2="130" y2="445"/>
+    <text x="84"  y="52"  font-size="12" font-weight="700" fill="#3355cc" pointer-events="none">ו</text>
+    <text x="170" y="52"  font-size="12" font-weight="700" fill="#3355cc" pointer-events="none">ה</text>
+    <text x="145" y="122" font-size="12" font-weight="700" fill="#c0284a" pointer-events="none">ד</text>
+    <text x="124" y="100" font-size="12" font-weight="700" fill="#3355cc" pointer-events="none">ש</text>
+    <text x="34"  y="145" font-size="12" font-weight="700" fill="#3355cc" pointer-events="none">ג</text>
+    <text x="212" y="145" font-size="12" font-weight="700" fill="#3355cc" pointer-events="none">ב</text>
+    <text x="150" y="150" font-size="12" font-weight="700" fill="#3355cc" pointer-events="none">ח</text>
+    <text x="94"  y="150" font-size="12" font-weight="700" fill="#3355cc" pointer-events="none">ז</text>
+    <text x="124" y="210" font-size="12" font-weight="700" fill="#3355cc" pointer-events="none">א</text>
+    <text x="72"  y="236" font-size="12" font-weight="700" fill="#3355cc" pointer-events="none">נ</text>
+    <text x="168" y="236" font-size="12" font-weight="700" fill="#3355cc" pointer-events="none">ל</text>
+    <text x="64"  y="188" font-size="12" font-weight="700" fill="#3355cc" pointer-events="none">י</text>
+    <text x="178" y="188" font-size="12" font-weight="700" fill="#3355cc" pointer-events="none">ט</text>
+    <text x="34"  y="257" font-size="12" font-weight="700" fill="#3355cc" pointer-events="none">פ</text>
+    <text x="212" y="257" font-size="12" font-weight="700" fill="#3355cc" pointer-events="none">כ</text>
+    <text x="72"  y="296" font-size="12" font-weight="700" fill="#3355cc" pointer-events="none">ע</text>
+    <text x="168" y="296" font-size="12" font-weight="700" fill="#3355cc" pointer-events="none">ס</text>
+    <text x="145" y="318" font-size="12" font-weight="700" fill="#c0284a" pointer-events="none">ר</text>
+    <text x="124" y="326" font-size="12" font-weight="700" fill="#3355cc" pointer-events="none">מ</text>
+    <text x="176" y="352" font-size="12" font-weight="700" fill="#3355cc" pointer-events="none">צ</text>
+    <text x="70"  y="352" font-size="12" font-weight="700" fill="#3355cc" pointer-events="none">ק</text>
+    <text x="145" y="415" font-size="12" font-weight="700" fill="#c0284a" pointer-events="none">ת</text>
+    <circle id="c-keter"     cx="130" cy="30"  r="24" fill="#a8dadc" stroke="#457b9d" stroke-width="3"/>
+    <circle id="c-binah"     cx="55"  cy="88"  r="24" fill="#a8dadc" stroke="#457b9d" stroke-width="3"/>
+    <circle id="c-chokmah"   cx="205" cy="88"  r="24" fill="#a8dadc" stroke="#457b9d" stroke-width="3"/>
+    <circle id="c-daat"      cx="130" cy="138" r="20" fill="#a8dadc" stroke="#457b9d" stroke-width="2" stroke-dasharray="5,3"/>
+    <circle id="c-gevurah"   cx="55"  cy="196" r="24" fill="#a8dadc" stroke="#457b9d" stroke-width="3"/>
+    <circle id="c-chesed"    cx="205" cy="196" r="24" fill="#a8dadc" stroke="#457b9d" stroke-width="3"/>
+    <circle id="c-tiphereth" cx="130" cy="254" r="24" fill="#a8dadc" stroke="#457b9d" stroke-width="3"/>
+    <circle id="c-hod"       cx="55"  cy="312" r="24" fill="#a8dadc" stroke="#457b9d" stroke-width="3"/>
+    <circle id="c-netzach"   cx="205" cy="312" r="24" fill="#a8dadc" stroke="#457b9d" stroke-width="3"/>
+    <circle id="c-yesod"     cx="130" cy="370" r="24" fill="#a8dadc" stroke="#457b9d" stroke-width="3"/>
+    <circle id="c-malkuth"   cx="130" cy="445" r="24" fill="#a8dadc" stroke="#457b9d" stroke-width="3"/>
+    <text x="130" y="25"  font-size="10" text-anchor="middle" font-weight="700" fill="#1d3557">케테르</text>
+    <text x="130" y="37"  font-size="9"  text-anchor="middle" fill="#457b9d">כתר</text>
+    <text x="55"  y="83"  font-size="10" text-anchor="middle" font-weight="700" fill="#1d3557">비나</text>
+    <text x="55"  y="95"  font-size="9"  text-anchor="middle" fill="#457b9d">בינה</text>
+    <text x="205" y="83"  font-size="10" text-anchor="middle" font-weight="700" fill="#1d3557">호크마</text>
+    <text x="205" y="95"  font-size="9"  text-anchor="middle" fill="#457b9d">חכמה</text>
+    <text x="130" y="134" font-size="10" text-anchor="middle" font-weight="700" fill="#1d3557">다트</text>
+    <text x="130" y="145" font-size="9"  text-anchor="middle" fill="#457b9d">דעת</text>
+    <text x="55"  y="191" font-size="10" text-anchor="middle" font-weight="700" fill="#1d3557">게부라</text>
+    <text x="55"  y="203" font-size="9"  text-anchor="middle" fill="#457b9d">גבורה</text>
+    <text x="205" y="191" font-size="10" text-anchor="middle" font-weight="700" fill="#1d3557">헤세드</text>
+    <text x="205" y="203" font-size="9"  text-anchor="middle" fill="#457b9d">חסד</text>
+    <text x="130" y="248" font-size="10" text-anchor="middle" font-weight="700" fill="#1d3557">티페레트</text>
+    <text x="130" y="262" font-size="9"  text-anchor="middle" fill="#457b9d">תפארת</text>
+    <text x="55"  y="307" font-size="10" text-anchor="middle" font-weight="700" fill="#1d3557">호드</text>
+    <text x="55"  y="319" font-size="9"  text-anchor="middle" fill="#457b9d">הוד</text>
+    <text x="205" y="307" font-size="10" text-anchor="middle" font-weight="700" fill="#1d3557">네짜흐</text>
+    <text x="205" y="319" font-size="9"  text-anchor="middle" fill="#457b9d">נצח</text>
+    <text x="130" y="365" font-size="10" text-anchor="middle" font-weight="700" fill="#1d3557">예소드</text>
+    <text x="130" y="377" font-size="9"  text-anchor="middle" fill="#457b9d">יסוד</text>
+    <text x="130" y="440" font-size="10" text-anchor="middle" font-weight="700" fill="#1d3557">말쿠트</text>
+    <text x="130" y="452" font-size="9"  text-anchor="middle" fill="#457b9d">מלכות</text>
+    <circle id="ring" cx="0" cy="0" r="0" fill="none" stroke="#e8a020" stroke-width="4" opacity="0" pointer-events="none"/>
+    <circle cx="130" cy="30"  r="24" fill="transparent" stroke="none" style="cursor:pointer" data-id="keter"     class="H"/>
+    <circle cx="55"  cy="88"  r="24" fill="transparent" stroke="none" style="cursor:pointer" data-id="binah"     class="H"/>
+    <circle cx="205" cy="88"  r="24" fill="transparent" stroke="none" style="cursor:pointer" data-id="chokmah"   class="H"/>
+    <circle cx="130" cy="138" r="20" fill="transparent" stroke="none" style="cursor:pointer" data-id="daat"      class="H"/>
+    <circle cx="55"  cy="196" r="24" fill="transparent" stroke="none" style="cursor:pointer" data-id="gevurah"   class="H"/>
+    <circle cx="205" cy="196" r="24" fill="transparent" stroke="none" style="cursor:pointer" data-id="chesed"    class="H"/>
+    <circle cx="130" cy="254" r="24" fill="transparent" stroke="none" style="cursor:pointer" data-id="tiphereth" class="H"/>
+    <circle cx="55"  cy="312" r="24" fill="transparent" stroke="none" style="cursor:pointer" data-id="hod"       class="H"/>
+    <circle cx="205" cy="312" r="24" fill="transparent" stroke="none" style="cursor:pointer" data-id="netzach"   class="H"/>
+    <circle cx="130" cy="370" r="24" fill="transparent" stroke="none" style="cursor:pointer" data-id="yesod"     class="H"/>
+    <circle cx="130" cy="445" r="24" fill="transparent" stroke="none" style="cursor:pointer" data-id="malkuth"   class="H"/>
+  </svg>
+  </div>
+</div>
+<script>
+var DATA={
+  keter:{name:'케테르 כתר · 수 1',main:'모든 것의 근원, 왕관. 강한 자아 의식과 독립심을 가지며 새로운 시작을 두려워하지 않습니다. 타인의 시선보다 자신의 내면 목소리를 따르는 경향이 있습니다.',healthy:'강한 리더십, 명확한 방향 감각, 독창적 아이디어로 주변에 영감을 줍니다.',unhealthy:'고집스럽고 타인의 의견을 무시하며, 외로움을 느껴도 도움을 구하지 못합니다.'},
+  chokmah:{name:'호크마 חכמה · 수 2',main:'직관적 통찰과 협력의 에너지. 혼자보다 함께할 때 빛나며, 상대의 감정과 필요를 섬세하게 감지합니다. 중재자이자 지혜로운 조언자.',healthy:'탁월한 공감 능력, 조화로운 관계 형성, 직관적 판단으로 올바른 길을 찾습니다.',unhealthy:'우유부단하고 타인에게 지나치게 의존하며 자신의 필요를 억압합니다.'},
+  binah:{name:'비나 בינה · 수 3',main:'이해와 창조의 에너지. 예술적 감수성과 표현 욕구가 강하며, 생각을 구체적 형태로 빚는 능력이 있습니다. 소통과 자기표현이 핵심입니다.',healthy:'풍부한 창의성, 유머, 긍정적 에너지로 주변을 밝힙니다.',unhealthy:'과도한 감정 기복, 분산된 집중력, 피상적 관계에 머무를 수 있습니다.'},
+  chesed:{name:'헤세드 חסד · 수 4',main:'자비와 질서의 에너지. 안정적이고 신뢰할 수 있는 기반을 구축하는 사람. 규칙과 체계를 중시하며 꾸준한 노력으로 목표를 달성합니다.',healthy:'신뢰할 수 있는 책임감, 탁월한 조직력, 꾸준한 성실함.',unhealthy:'변화를 거부하고 고집스러워지며, 지나친 통제로 유연성을 잃습니다.'},
+  gevurah:{name:'게부라 גבורה · 수 5',main:'화성 에너지, 내면의식의 층. 빠른 결단력과 실행력. 변화와 자유를 사랑하며 다양한 경험을 통해 성장합니다. 경계와 규율을 설정하는 힘.',healthy:'용감하고 단호한 결단력, 새로운 도전을 즐기며 변화를 이끕니다.',unhealthy:'충동적이고 산만하며, 한 곳에 오래 머물지 못하고 관계가 불안정해집니다.'},
+  tiphereth:{name:'티페레트 תפארת · 수 6',main:'아름다움과 균형의 에너지. 가정과 공동체를 소중히 여기며 타인을 돌보는 것에서 삶의 의미를 찾습니다. 심장이자 중심, 태양의 의식.',healthy:'따뜻한 돌봄, 아름다운 환경 조성, 조화로운 관계의 중심이 됩니다.',unhealthy:'지나친 희생으로 자신을 잃고, 인정받지 못할 때 원망이 쌓입니다.'},
+  netzach:{name:'네짜흐 נצח · 수 7',main:'깊은 내면 탐구와 영적 추구. 혼자만의 시간이 필요하며 표면 너머의 진실을 찾습니다. 자연과 예술적 충동, 감정의 세피라.',healthy:'깊은 통찰력, 지혜로운 분석, 영적 성숙으로 타인에게 빛이 됩니다.',unhealthy:'고립과 냉소, 완벽주의로 인한 좌절, 불신과 분리감이 강해집니다.'},
+  hod:{name:'호드 הוד · 수 8',main:'각성수, 수성의 지성. 주도적이길 원하고 독립심이 강하며 리더십을 지니고 있습니다. 생각이 빠르고 정보 처리 능력이 뛰어나며 호기심이 왕성합니다.',healthy:'강한 리더십과 실행력, 명확한 소통, 빠른 판단으로 목표를 달성합니다.',unhealthy:'지나친 통제욕, 물질주의, 권력에 집착하며 타인을 수단으로 여길 수 있습니다.'},
+  yesod:{name:'예소드 יסוד · 수 9',main:'초의식, 달의 에너지. 속깊은 마음의 소원, 정서적 공감, 직관, 꿈의 특성. 잠재의식층에서 전체를 관장하며 모든 세피라를 통해 에너지를 전달하는 기초.',healthy:'깊은 공감 능력, 강한 직관, 내면의 지혜로 주변을 이끄는 정신적 지주.',unhealthy:'감정 기복이 심하고 현실과 환상의 경계가 흐려지며 도피적 경향이 나타납니다.'},
+  malkuth:{name:'말쿠트 מלכות · 수 10',main:'왕국의 에너지, 물질과 현실. 모든 것을 현실로 구현하는 능력. 실용적이고 현실 감각이 뛰어나며 아이디어를 구체적 결과로 만들어냅니다.',healthy:'뛰어난 실행력, 현실적 지혜, 꿈을 현실로 만드는 강인한 의지.',unhealthy:'물질에 집착하거나 현실을 회피하며 이상과 현실 사이에서 방황합니다.'},
+  daat:{name:'다트 דעת · 숨겨진 세피라',main:'호크마와 비나의 합일에서 나오는 깊은 앎. 경계를 넘나드는 신비로운 통찰력을 지닌 사람입니다.',healthy:'경계를 초월한 깊은 이해, 변형과 통합의 능력, 신비로운 직관.',unhealthy:'정체성 혼란, 경계 설정의 어려움, 현실 감각 상실.'}
+};
+
+var conns=[['keter','binah'],['keter','chokmah'],['keter','tiphereth'],['binah','chokmah'],['binah','gevurah'],['chokmah','chesed'],['binah','chesed'],['chokmah','gevurah'],['gevurah','chesed'],['gevurah','tiphereth'],['chesed','tiphereth'],['tiphereth','binah'],['tiphereth','chokmah'],['gevurah','hod'],['chesed','netzach'],['tiphereth','hod'],['tiphereth','netzach'],['tiphereth','yesod'],['hod','netzach'],['netzach','yesod'],['hod','yesod'],['yesod','malkuth']];
+var NP={keter:{x:130,y:30,r:24},binah:{x:55,y:88,r:24},chokmah:{x:205,y:88,r:24},daat:{x:130,y:138,r:20},gevurah:{x:55,y:196,r:24},chesed:{x:205,y:196,r:24},tiphereth:{x:130,y:254,r:24},hod:{x:55,y:312,r:24},netzach:{x:205,y:312,r:24},yesod:{x:130,y:370,r:24},malkuth:{x:130,y:445,r:24}};
+var names={keter:'케테르',binah:'비나',chokmah:'호크마',daat:'다트',gevurah:'게부라',chesed:'헤세드',tiphereth:'티페레트',hod:'호드',netzach:'네짜흐',yesod:'예소드',malkuth:'말쿠트'};
+var LC={1:'#1a6fc4',2:'#5a2080'};
+var LN={1:'① 이름',2:'② 과제/문장'};
+var ROLES=['✦ 생일(각성수): 가장 빈번히 드러나는 성격','✦ 생월(내면의식): 내면에서 작동하는 에너지','✦ 생년(초의식): 잠재의식층의 실세'];
+var cur=1,fn=null,LP={1:[],2:[]},sel=[];
+var ring=document.getElementById('ring');
+
+function setLayer(n){
+  cur=n;
+  document.getElementById('b2').classList.remove('on');
+  document.getElementById('b3').classList.remove('on');
+  if(n===2)document.getElementById('b2').classList.add('on');
+  if(n===3)document.getElementById('b3').classList.add('on');
+  hideRing();fn=null;hideBoxes();
+  ss(n===3?'③ 생일→생월→생년 순서로 세피라를 클릭하세요 ('+sel.length+'/3)':LN[n]+' 경로 · 첫 번째 세피라를 선택하세요');
+}
+function gl(a,b){return document.getElementById('l-'+a+'-'+b)||document.getElementById('l-'+b+'-'+a);}
+function ic(a,b){return conns.some(function(p){return(p[0]===a&&p[1]===b)||(p[0]===b&&p[1]===a);});}
+function ss(m){document.getElementById('status').textContent=m;}
+function showRing(id){var p=NP[id];ring.setAttribute('cx',p.x);ring.setAttribute('cy',p.y);ring.setAttribute('r',p.r+5);ring.setAttribute('opacity','1');ring.setAttribute('stroke',LC[cur]||'#e8a020');}
+function hideRing(){ring.setAttribute('opacity','0');}
+function hideBoxes(){document.getElementById('ibox').classList.remove('on');document.getElementById('cbox').classList.remove('on');}
+
+function showSingle(id,ri){
+  var d=DATA[id];if(!d)return;
+  document.getElementById('ititle').textContent=d.name;
+  document.getElementById('irole').textContent=ROLES[ri];
+  document.getElementById('imain').textContent=d.main;
+  document.getElementById('ihealthy').textContent=d.healthy;
+  document.getElementById('iunhealthy').textContent=d.unhealthy;
+  document.getElementById('ibox').classList.add('on');
+}
+
+function showCombo(){
+  if(sel.length<3)return;
+  var n1=names[sel[0]],n2=names[sel[1]],n3=names[sel[2]];
+  var d1=DATA[sel[0]],d2=DATA[sel[1]],d3=DATA[sel[2]];
+  var bal=checkBal();
+  var t='당신은 '+n1+'(생일)·'+n2+'(생월)·'+n3+'(생년)의 에너지를 지니고 있습니다.\n\n';
+  t+='[ 생일 각성수: '+n1+' ]\n';
+  t+=d1.main+'\n\n';
+  t+='[ 생월 내면의식: '+n2+' ]\n';
+  t+=d2.main+'\n\n';
+  t+='[ 생년 초의식(잠재의식층의 실세): '+n3+' ]\n';
+  t+=d3.main+'\n\n';
+  t+='━━━━━━━━━━━━━━━\n';
+  t+=bal;
+  document.getElementById('ctitle').textContent='✦ 세 세피라 조합 해석: '+n1+' · '+n2+' · '+n3;
+  document.getElementById('ctext').textContent=t;
+  document.getElementById('cbox').classList.add('on');
+}
+
+function checkBal(){
+  var L=['binah','gevurah','hod'],R=['chokmah','chesed','netzach'];
+  var lc=0,rc=0;
+  sel.forEach(function(s){if(L.indexOf(s)>=0)lc++;if(R.indexOf(s)>=0)rc++;});
+  if(lc>rc)return '⚠️ 왼쪽 기둥(엄격함·심판)에 치우쳐 있습니다.\n오른쪽 기둥의 자비와 확장 에너지로 균형을 맞추면 좋습니다.';
+  if(rc>lc)return '⚠️ 오른쪽 기둥(자비·확장)에 치우쳐 있습니다.\n왼쪽 기둥의 규율과 경계 에너지로 균형을 맞추면 좋습니다.';
+  return '✦ 세 기둥이 균형 있게 분포되어 있습니다.\n조화로운 에너지 흐름을 가지고 있습니다.';
+}
+
+function alc(a,b){
+  var ln=gl(a,b);if(!ln)return;
+  var cs=[];
+  [1,2].forEach(function(l){LP[l].forEach(function(p){if((p.from===a&&p.to===b)||(p.from===b&&p.to===a))cs.push(LC[l]);});});
+  if(!cs.length){ln.setAttribute('stroke','#d0d8e0');ln.setAttribute('stroke-width','2.5');}
+  else{ln.setAttribute('stroke',cs[cs.length-1]);ln.setAttribute('stroke-width','7');}
+}
+function ral(){conns.forEach(function(c){alc(c[0],c[1]);});}
+
+document.querySelectorAll('.H').forEach(function(el){
+  el.addEventListener('click',function(e){
+    e.stopPropagation();
+    var id=el.getAttribute('data-id');
+    if(cur===3){
+      if(sel.length>=3){ss('이미 3개 선택됨. 초기화 후 다시 시작하세요.');return;}
+      var ci=document.getElementById('c-'+id);
+      var colors=['#c0284a','#b05000','#1a6fc4'];
+      sel.push(id);
+      ci.setAttribute('fill',colors[sel.length-1]);
+      ci.setAttribute('stroke','#5a0000');
+      showSingle(id,sel.length-1);
+      ss(sel.length+'/3 선택됨');
+      if(sel.length===3){showCombo();ss('✦ 세 세피라 조합 해석 완성!');}
+      return;
+    }
+    if(!fn){fn=id;showRing(id);ss(LN[cur]+' · "'+names[id]+'" 선택 → 연결할 세피라 클릭');return;}
+    if(fn===id){hideRing();fn=null;ss(LN[cur]+' · 첫 번째 세피라를 선택하세요');return;}
+    if(ic(fn,id)){LP[cur].push({from:fn,to:id});alc(fn,id);hideRing();ss('✓ '+names[fn]+' → '+names[id]+' 경로 켜짐!');fn=null;return;}
+    hideRing();fn=id;showRing(id);ss('"'+names[id]+'" 새 출발점 설정');
+  });
+});
+
+function undoLast(){
+  if(cur===3){
+    if(!sel.length)return;
+    var l=sel.pop();
+    document.getElementById('c-'+l).setAttribute('fill','#a8dadc');
+    document.getElementById('c-'+l).setAttribute('stroke','#457b9d');
+    hideBoxes();ss('취소됨 ('+sel.length+'/3)');return;
+  }
+  if(fn){hideRing();fn=null;ss(LN[cur]+' · 첫 번째 세피라를 선택하세요');return;}
+  if(!LP[cur].length)return;
+  var l=LP[cur].pop();alc(l.from,l.to);ss('마지막 경로 취소됨');
+}
+function clearLayer(){
+  if(cur===3){
+    sel.forEach(function(id){document.getElementById('c-'+id).setAttribute('fill','#a8dadc');document.getElementById('c-'+id).setAttribute('stroke','#457b9d');});
+    sel=[];hideBoxes();ss('③ 생일→생월→생년 순서로 세피라를 클릭하세요 (0/3)');return;
+  }
+  LP[cur]=[];hideRing();fn=null;ral();ss(LN[cur]+' 초기화됨');
+}
+function resetAll(){
+  LP={1:[],2:[]};hideRing();fn=null;ral();
+  sel.forEach(function(id){document.getElementById('c-'+id).setAttribute('fill','#a8dadc');document.getElementById('c-'+id).setAttribute('stroke','#457b9d');});
+  sel=[];hideBoxes();ss('전체 초기화됨');
+}
+</script>
+</body>
+</html>
